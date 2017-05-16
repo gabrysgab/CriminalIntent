@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -26,6 +27,7 @@ public class CrimeFragment extends android.support.v4.app.Fragment {
     private static final String ARG_CRIME_ID ="crime_id";
     private static final String ARG_CRIME_POSITION = "crime_position";
     private static final String DIALOG_DATE = "DialogDate";
+    private static final int REQUEST_DATE = 0;
     private Crime crime;
     private int crimePosition;
     private EditText titleField;
@@ -79,12 +81,13 @@ public class CrimeFragment extends android.support.v4.app.Fragment {
             }
         });
         dateButton = (Button) view.findViewById(R.id.crime_date);
-        dateButton.setText(crime.getDate().toString());
+        updateDateButton();
         dateButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 FragmentManager fragmentManager = getFragmentManager();
                 DatePickerFragment dialog = DatePickerFragment.newInstance(crime.getDate());
+                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
                 dialog.show(fragmentManager,DIALOG_DATE);
             }
         });
@@ -98,5 +101,20 @@ public class CrimeFragment extends android.support.v4.app.Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(resultCode != Activity.RESULT_OK) return;
+        if(requestCode == REQUEST_DATE) {
+            Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+            crime.setDate(date);
+            updateDateButton();
+        }
+
+    }
+
+    private void updateDateButton() {
+        dateButton.setText(crime.getDate().toString());
     }
 }

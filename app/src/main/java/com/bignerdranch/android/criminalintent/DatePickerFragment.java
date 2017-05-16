@@ -1,7 +1,11 @@
 package com.bignerdranch.android.criminalintent;
 
+import android.app.Activity;
 import android.app.Dialog;
 
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
@@ -10,6 +14,7 @@ import android.view.LayoutInflater;
 import android.widget.DatePicker;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * Created by Mateusz on 2017-05-10.
@@ -18,16 +23,26 @@ import java.util.Date;
 public class DatePickerFragment extends DialogFragment {
 
     private static final String ARG_DATE = "crime_date";
+    public static final String EXTRA_DATE = "extra_date";
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Date date = (Date) getArguments().getSerializable(ARG_DATE);
 
-        DatePicker datePicker = initDatePicker(date);
+        final DatePicker datePicker = initDatePicker(date);
         return new AlertDialog.Builder(getActivity())
                 .setView(datePicker)
                 .setTitle(R.string.date_picker_title)
-                .setPositiveButton(android.R.string.ok, null)
+                .setPositiveButton(android.R.string.ok, new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        int year = datePicker.getYear();
+                        int month = datePicker.getMonth();
+                        int day = datePicker.getDayOfMonth();
+                        Date date = new GregorianCalendar(year, month, day).getTime();
+                        sendResult(Activity.RESULT_OK, date);
+                    }
+                })
                 .create();
     }
 
@@ -51,6 +66,13 @@ public class DatePickerFragment extends DialogFragment {
         DatePickerFragment fragment = new DatePickerFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    private void sendResult(int resultCode, Date date) {
+        if(getTargetFragment() == null) return;
+        Intent intent = new Intent();
+        intent.putExtra(EXTRA_DATE, date);
+        getTargetFragment().onActivityResult(getTargetRequestCode(), resultCode, intent);
     }
 
 }
